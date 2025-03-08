@@ -14,6 +14,7 @@ import {
   Expand,
   Filter,
   X,
+  Scissors,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -21,7 +22,9 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -50,12 +53,16 @@ export function ImageEditor() {
     applyFilter,
     setFilterIntensity,
     resizeImage,
+    removeBackground: removeImageBackground,
   } = useEditorStore();
 
   const [dimensions, setDimensions] = useState({
     width: imageState.width,
     height: imageState.height,
   });
+  
+  const [apiKey, setApiKey] = useState("");
+  const [isRemoveBgDialogOpen, setIsRemoveBgDialogOpen] = useState(false);
 
   if (!imageState.image) {
     return null;
@@ -82,6 +89,16 @@ export function ImageEditor() {
       width: Math.round(height * ratio), 
       height 
     });
+  };
+
+  const handleRemoveBackground = async () => {
+    if (!apiKey.trim()) {
+      toast.error("API key is required");
+      return;
+    }
+    
+    await removeImageBackground(apiKey);
+    setIsRemoveBgDialogOpen(false);
   };
 
   const getFilterStyle = () => {
@@ -195,6 +212,15 @@ export function ImageEditor() {
                   >
                     <FlipVertical className="h-4 w-4" />
                     <span>Flip Vertical</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsRemoveBgDialogOpen(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <Scissors className="h-4 w-4" />
+                    <span>Remove Background</span>
                   </Button>
                 </div>
 
@@ -346,6 +372,40 @@ export function ImageEditor() {
           </div>
         </Tabs>
       </Card>
+      
+      <Dialog open={isRemoveBgDialogOpen} onOpenChange={setIsRemoveBgDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Image Background</DialogTitle>
+            <DialogDescription>
+              Enter your remove.bg API key to process this image.
+              You can get a free API key at <a href="https://www.remove.bg/api" target="_blank" rel="noopener noreferrer" className="text-primary underline">remove.bg</a>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="api-key" className="text-sm font-medium">
+                API Key
+              </label>
+              <Input
+                id="api-key"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your remove.bg API key"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRemoveBgDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRemoveBackground}>
+              Remove Background
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

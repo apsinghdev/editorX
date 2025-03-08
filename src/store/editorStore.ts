@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
+import { removeBackground } from '@/utils/backgroundRemoval';
 
 export type FilterType = 
   | 'none'
@@ -42,6 +43,9 @@ interface EditorStore {
   // Filters
   applyFilter: (filter: FilterType) => void;
   setFilterIntensity: (intensity: number) => void;
+  
+  // Background removal
+  removeBackground: (apiKey: string) => Promise<void>;
   
   // Export
   downloadImage: () => void;
@@ -177,6 +181,42 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         filterIntensity: intensity,
       }
     }));
+  },
+  
+  removeBackground: async (apiKey: string) => {
+    const { image } = get().imageState;
+    
+    if (!image) {
+      toast.error('No image to process');
+      return;
+    }
+    
+    toast.loading('Removing background...');
+    
+    const resultImage = await removeBackground(image, apiKey);
+    
+    if (resultImage) {
+      const img = new Image();
+      img.onload = () => {
+        set((state) => ({
+          imageState: {
+            ...state.imageState,
+            image: resultImage,
+            width: img.width,
+            height: img.height,
+          }
+        }));
+        toast.dismiss();
+        toast.success('Background removed successfully');
+      };
+      img.onerror = () => {
+        toast.dismiss();
+        toast.error('Failed to load the processed image');
+      };
+      img.src = resultImage;
+    } else {
+      toast.dismiss();
+    }
   },
   
   downloadImage: () => {
