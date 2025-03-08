@@ -33,7 +33,7 @@ const Index = () => {
       <footer className="py-6 border-t dark:border-gray-700">
         <div className="container max-w-6xl mx-auto px-4">
           <p className="text-sm text-center text-muted-foreground">
-            Designed with simplicity and elegance in mind. &copy; {new Date().getFullYear()}
+            Designed with simplicity and elegance in mind by Ajeet. &copy; {new Date().getFullYear()}
           </p>
         </div>
       </footer>
