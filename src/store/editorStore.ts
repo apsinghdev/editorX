@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import { removeBackground } from '@/utils/backgroundRemoval';
+import { modelInputProps } from "../components/helpers/Interfaces";
 
 export type FilterType = 
   | 'none'
@@ -28,9 +29,21 @@ export interface ImageState {
 interface EditorStore {
   // Image state
   imageState: ImageState;
+
+  advanceMode: boolean;
+  toggleAdvanceMode: () => void;
+  setAdvanceMode: (value: boolean) => void;
+  
+  // Click tracking state (from AppContext)
+  clicks: modelInputProps[] | null;
+  setClicks: (clicks: modelInputProps[] | null) => void;
+  
+  // Mask image state (from AppContext)
+  maskImg: HTMLImageElement | null;
+  setMaskImg: (maskImg: HTMLImageElement | null) => void;
   
   // Actions
-  setImage: (imageFile: File) => void;
+  setImage: (imageFile: File | HTMLImageElement) => void;
   resetImage: () => void;
   clearImage: () => void;
   
@@ -65,35 +78,66 @@ const initialImageState: ImageState = {
 };
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
+  // Image state
   imageState: { ...initialImageState },
+
+  advanceMode: false,
   
-  setImage: async (imageFile: File) => {
+  toggleAdvanceMode: () => {
+    set((state) => ({
+      advanceMode: !state.advanceMode
+    }));
+  },
+  
+  setAdvanceMode: (value: boolean) => {
+    set({ advanceMode: value });
+  },
+  
+  // Click tracking state (from AppContext)
+  clicks: null,
+  setClicks: (clicks: modelInputProps[] | null) => set({ clicks }),
+  
+  // Mask image state (from AppContext)
+  maskImg: null,
+  setMaskImg: (maskImg: HTMLImageElement | null) => set({ maskImg }),
+  
+  setImage: async (imageFile: File | HTMLImageElement) => {
     try {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          set({
-            imageState: {
-              ...initialImageState,
-              image: e.target?.result as string,
-              originalImage: e.target?.result as string,
-              name: imageFile.name,
-              width: img.width,
-              height: img.height,
-            }
-          });
-          toast.success('Image uploaded successfully');
+      if (imageFile instanceof File) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            set({
+              imageState: {
+                ...initialImageState,
+                image: e.target?.result as string,
+                originalImage: e.target?.result as string,
+                name: imageFile.name,
+                width: img.width,
+                height: img.height,
+              }
+            });
+            toast.success('Image uploaded successfully');
+          };
+          img.src = e.target?.result as string;
         };
-        img.src = e.target?.result as string;
-      };
-      
-      reader.onerror = () => {
-        toast.error('Failed to read the image');
-      };
-      
-      reader.readAsDataURL(imageFile);
+        reader.onerror = () => {
+          toast.error('Failed to read the image');
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        set({
+          imageState: {
+            ...initialImageState,
+            image: imageFile.src,
+            originalImage: imageFile.src,
+            name: 'image.png',
+            width: imageFile.width,
+            height: imageFile.height,
+          }
+        });
+      }
     } catch (error) {
       toast.error('Error uploading image');
       console.error(error);
