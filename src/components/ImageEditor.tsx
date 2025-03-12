@@ -52,7 +52,7 @@ const filterPresets: { name: string; type: FilterType; description: string }[] =
     { name: "Invert", type: "invert", description: "Negative colors" },
   ];
 
-const IMAGE_PATH = "/assets/data/truck.jpg";
+// const IMAGE_PATH = "/assets/data/truck.jpg";
 const IMAGE_EMBEDDING = `src/assets/data/ajeet_embedding.npy`;
 const MODEL_DIR = `${window.location.origin}/model/sam_onnx_quantized_example.onnx`;
 
@@ -62,6 +62,8 @@ export function ImageEditor() {
     imageState,
     maskImg,
     clicks,
+    userPrompt,
+    setPrompt,
     setAdvanceMode,
     setImage,
     setClicks,
@@ -77,6 +79,7 @@ export function ImageEditor() {
     setFilterIntensity,
     resizeImage,
     removeBackground: removeImageBackground,
+    fillImageWithMask: modifyTheImage,
   } = useEditorStore();
 
   const [dimensions, setDimensions] = useState({
@@ -109,6 +112,11 @@ export function ImageEditor() {
       handleAdvanceMode();
     }
   };
+
+  const handleUserPrompt = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPrompt(e.target.value);
+    console.log("user prompt", userPrompt);
+  }
 
   const [shouldFitToWidth, setShouldFitToWidth] = useState(true);
   const bodyEl = document.body;
@@ -217,6 +225,7 @@ export function ImageEditor() {
           // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
           setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
         }
+        console.log("mask set to", maskImg);
       } catch (e) {
         console.log(e);
       }
@@ -272,6 +281,11 @@ export function ImageEditor() {
     await removeImageBackground(apiKey);
     setIsRemoveBgDialogOpen(false);
   };
+
+  const handleModifyTheImage = async () => {
+    console.log("modify the image fn")
+    await modifyTheImage(imageState.image, maskImg, userPrompt);
+  }
 
   const getFilterStyle = () => {
     if (imageState.filter === "none") return {};
@@ -376,8 +390,8 @@ export function ImageEditor() {
                 <p>
                   Hover over the image and click on the part you want to change.
                 </p>
-                <Input placeholder="Enter a prompt"></Input>
-                <Button>Generate</Button>
+                <Input placeholder="Enter a prompt" onChange={handleUserPrompt}></Input>
+                <Button onClick={handleModifyTheImage}>Generate</Button>
               </div>
             </TabsContent>
             <TabsContent value="transform" className="mt-0">
