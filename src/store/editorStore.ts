@@ -334,6 +334,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
       const state = get().imageState;
       const img = new Image();
+      img.crossOrigin = "anonymous";
 
       img.onload = () => {
         // Set canvas dimensions

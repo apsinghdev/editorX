@@ -62,10 +62,6 @@ export const fillImageWithMask = async (
     let processedImageUrl = imageUrl;
     let processedMaskUrl = maskUrl;
 
-    console.log("imageURL", processedImageUrl);
-    console.log("maskURL", processedMaskUrl);
-    console.log("prompt", prompt);
-
     // If the URLs are local files or HTML elements, convert them
     if (
       imageUrl instanceof File ||
@@ -118,8 +114,6 @@ export const fillImageWithMask = async (
 
     // Return the URL of the first generated image
     if (result.images && result.images.length > 0) {
-      console.log(result.images);
-      console.log(result.images[0].url);
       return result.images[0].url;
     } else {
       throw new Error("No images returned from the API");

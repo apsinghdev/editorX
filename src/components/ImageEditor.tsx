@@ -110,12 +110,13 @@ export function ImageEditor() {
   const handleTabValueChange = (value: string) => {
     if (value === "advance") {
       handleAdvanceMode();
+    } else {
+      setAdvanceMode(false);
     }
   };
 
   const handleUserPrompt = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrompt(e.target.value);
-    console.log("user prompt", userPrompt);
   }
 
   const [shouldFitToWidth, setShouldFitToWidth] = useState(true);
@@ -225,7 +226,6 @@ export function ImageEditor() {
           // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
           setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
         }
-        console.log("mask set to", maskImg);
       } catch (e) {
         console.log(e);
       }
@@ -233,7 +233,6 @@ export function ImageEditor() {
 
   const handleAdvanceMode = () => {
     setAdvanceMode(true);
-    console.log("advance");
   };
 
   const getClick = (x: number, y: number): modelInputProps => {
@@ -242,7 +241,6 @@ export function ImageEditor() {
   };
 
   const handleMouseMove = _.throttle((e: any) => {
-    console.log("hover")
     let el = e.nativeEvent.target;
     const rect = el.getBoundingClientRect();
     let x = e.clientX - rect.left;
@@ -283,7 +281,6 @@ export function ImageEditor() {
   };
 
   const handleModifyTheImage = async () => {
-    console.log("modify the image fn")
     await modifyTheImage(imageState.image, maskImg, userPrompt);
   }
 
