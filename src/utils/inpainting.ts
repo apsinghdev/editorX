@@ -1,7 +1,6 @@
 import { fal } from "@fal-ai/client";
 import { toast } from "sonner";
 
-
 // Function to resize an image
 const resizeImage = (
   imageUrl: string,
@@ -12,35 +11,35 @@ const resizeImage = (
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    
+
     img.onload = () => {
       // Calculate new dimensions while maintaining aspect ratio
       let width = img.width;
       let height = img.height;
-      
+
       if (width > maxWidth) {
         height = Math.round((height * maxWidth) / width);
         width = maxWidth;
       }
-      
+
       if (height > maxHeight) {
         width = Math.round((width * maxHeight) / height);
         height = maxHeight;
       }
-      
+
       // Create canvas for resizing
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      
+
       // Draw and resize image
       const ctx = canvas.getContext("2d");
       ctx?.drawImage(img, 0, 0, width, height);
-      
+
       // Convert to data URL with compression
       resolve(canvas.toDataURL("image/jpeg", quality));
     };
-    
+
     img.onerror = reject;
     img.src = imageUrl;
   });
@@ -52,7 +51,6 @@ export const fillImageWithMask = async (
   apiKey: string,
   prompt: string
 ): Promise<string | null> => {
-  
   fal.config({
     credentials: apiKey,
   });
@@ -89,7 +87,12 @@ export const fillImageWithMask = async (
       processedMaskUrl = maskUrl;
     }
 
-    const resizedImageUrl = await resizeImage(processedImageUrl as string, 1024, 1024, 0.8);
+    const resizedImageUrl = await resizeImage(
+      processedImageUrl as string,
+      1024,
+      1024,
+      0.8
+    );
 
     const response = await fal.subscribe("fal-ai/flux-lora-fill", {
       input: {

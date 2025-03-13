@@ -1,13 +1,13 @@
 import { useEditorStore, FilterType } from "@/store/editorStore";
 import { InferenceSession, Tensor } from "onnxruntime-web";
-import * as ort from "onnxruntime-web"
+import * as ort from "onnxruntime-web";
 /* @ts-ignore */
 import npyjs from "npyjs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import * as _ from "underscore"
+import * as _ from "underscore";
 import { modelInputProps } from "./helpers/Interfaces";
 import { handleImageScale } from "./helpers/scaleHelper";
 import { modelScaleProps } from "./helpers/Interfaces";
@@ -38,7 +38,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import Segmentation from "./Segmentation";
 
 const filterPresets: { name: string; type: FilterType; description: string }[] =
   [
@@ -52,7 +51,6 @@ const filterPresets: { name: string; type: FilterType; description: string }[] =
     { name: "Invert", type: "invert", description: "Negative colors" },
   ];
 
-// const IMAGE_PATH = "/assets/data/truck.jpg";
 const IMAGE_EMBEDDING = `src/assets/data/ajeet_embedding.npy`;
 const MODEL_DIR = `${window.location.origin}/model/sam_onnx_quantized_example.onnx`;
 
@@ -92,7 +90,7 @@ export function ImageEditor() {
   const [isFalDialogOpen, setFalDialogOpen] = useState(false);
   const [model, setModel] = useState<InferenceSession | null>(null); // ONNX model
   const [tensor, setTensor] = useState<Tensor | null>(null); // Image embedding tensor
-    // The ONNX model expects the input to be rescaled to 1024. 
+  // The ONNX model expects the input to be rescaled to 1024.
   // The modelScale state variable keeps track of the scale values.
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
 
@@ -118,7 +116,7 @@ export function ImageEditor() {
 
   const handleUserPrompt = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrompt(e.target.value);
-  }
+  };
 
   const [shouldFitToWidth, setShouldFitToWidth] = useState(true);
   const bodyEl = document.body;
@@ -149,8 +147,7 @@ export function ImageEditor() {
     } else {
       toast.error("Segment cleared");
     }
-  }, [maskImg])
-
+  }, [maskImg]);
 
   useEffect(() => {
     // Initialize the ONNX model
@@ -184,12 +181,12 @@ export function ImageEditor() {
       img.onload = () => {
         const { height, width, samScale } = handleImageScale(img);
         setModelScale({
-          height: height,  // original image height
-          width: width,  // original image width
+          height: height, // original image height
+          width: width, // original image width
           samScale: samScale, // scaling factor for image which has been resized to longest side 1024
         });
-        img.width = width; 
-        img.height = height; 
+        img.width = width;
+        img.height = height;
         setImage(img);
       };
     } catch (error) {
@@ -197,49 +194,50 @@ export function ImageEditor() {
     }
   };
 
-    // Decode a Numpy file into a tensor. 
-    const loadNpyTensor = async (tensorFile: string, dType: string) => {
-      let npLoader = new npyjs();
-      const npArray = await npLoader.load(tensorFile);
-      const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-      return tensor;
-    };
+  // Decode a Numpy file into a tensor.
+  const loadNpyTensor = async (tensorFile: string, dType: string) => {
+    let npLoader = new npyjs();
+    const npArray = await npLoader.load(tensorFile);
+    const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
+    return tensor;
+  };
 
-    // Run the ONNX model every time clicks has changed
-    useEffect(() => {
-      runONNX();
-    }, [clicks]);
-  
-    const runONNX = async () => {
-      try {
-        if (
-          model === null ||
-          clicks === null ||
-          tensor === null ||
-          modelScale === null
-        ){
-          return;
-        }
-        else {
-          // Preapre the model input in the correct format for SAM. 
-          // The modelData function is from onnxModelAPI.tsx.
-          const feeds = modelData({
-            clicks,
-            tensor,
-            modelScale,
-          });
-          if (feeds === undefined) return;
-          // Run the SAM ONNX model with the feeds returned from modelData()
-          const results = await model.run(feeds);
-          const output = results[model.outputNames[0]];
-          // The predicted mask returned from the ONNX model is an array which is 
-          // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
-          setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
-        }
-      } catch (e) {
-        console.log(e);
+  // Run the ONNX model every time clicks has changed
+  useEffect(() => {
+    runONNX();
+  }, [clicks]);
+
+  const runONNX = async () => {
+    try {
+      if (
+        model === null ||
+        clicks === null ||
+        tensor === null ||
+        modelScale === null
+      ) {
+        return;
+      } else {
+        // Preapre the model input in the correct format for SAM.
+        // The modelData function is from onnxModelAPI.tsx.
+        const feeds = modelData({
+          clicks,
+          tensor,
+          modelScale,
+        });
+        if (feeds === undefined) return;
+        // Run the SAM ONNX model with the feeds returned from modelData()
+        const results = await model.run(feeds);
+        const output = results[model.outputNames[0]];
+        // The predicted mask returned from the ONNX model is an array which is
+        // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
+        setMaskImg(
+          onnxMaskToImage(output.data, output.dims[2], output.dims[3])
+        );
       }
-    };
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleAdvanceMode = () => {
     setAdvanceMode(true);
@@ -293,7 +291,7 @@ export function ImageEditor() {
   const handleModifyTheImage = async () => {
     await modifyTheImage(imageState.image, maskImg, falApiKey, userPrompt);
     setFalDialogOpen(false);
-  }
+  };
 
   const getFilterStyle = () => {
     if (imageState.filter === "none") return {};
@@ -396,9 +394,13 @@ export function ImageEditor() {
             <TabsContent value="advance" className="mt-0">
               <div className="space-y-4 flex flex-col">
                 <p>
-                  Segmentation activated. Please click on the part of the image you want to change.
+                  Segmentation activated. Please click on the part of the image
+                  you want to change.
                 </p>
-                <Input placeholder="Enter a prompt" onChange={handleUserPrompt}></Input>
+                <Input
+                  placeholder="Enter a prompt"
+                  onChange={handleUserPrompt}
+                ></Input>
                 <Button onClick={() => setFalDialogOpen(true)}>Generate</Button>
               </div>
             </TabsContent>
@@ -632,10 +634,7 @@ export function ImageEditor() {
         </Tabs>
       </Card>
 
-      <Dialog
-        open={isFalDialogOpen}
-        onOpenChange={setFalDialogOpen}
-      >
+      <Dialog open={isFalDialogOpen} onOpenChange={setFalDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modify the image</DialogTitle>
@@ -668,10 +667,7 @@ export function ImageEditor() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setFalDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setFalDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleModifyTheImage}>Ok</Button>
