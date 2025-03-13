@@ -66,6 +66,7 @@ interface EditorStore {
   fillImageWithMask: (
     image: string | File | Blob | HTMLImageElement,
     mask: string | File | Blob | HTMLImageElement,
+    apiKey: string,
     prompt: string
   ) => Promise<void>;
 
@@ -282,12 +283,14 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   fillImageWithMask: async (
     image: string | File | Blob | HTMLImageElement,
     mask: string | File | Blob | HTMLImageElement,
+    apiKey: string,
     prompt: string
   ) => {
     toast.loading("Magic is happening...");
     const modifiedImage = await fillImageWithMask(
       image,
       mask,
+      apiKey,
       prompt
     );
     if (modifiedImage) {

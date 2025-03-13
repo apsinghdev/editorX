@@ -68,7 +68,6 @@ export function ImageEditor() {
     setImage,
     setClicks,
     setMaskImg,
-    toggleAdvanceMode,
     rotateImage,
     flipImageHorizontal,
     flipImageVertical,
@@ -88,7 +87,9 @@ export function ImageEditor() {
   });
 
   const [apiKey, setApiKey] = useState("");
+  const [falApiKey, setFalApiKey] = useState("");
   const [isRemoveBgDialogOpen, setIsRemoveBgDialogOpen] = useState(false);
+  const [isFalDialogOpen, setFalDialogOpen] = useState(false);
   const [model, setModel] = useState<InferenceSession | null>(null); // ONNX model
   const [tensor, setTensor] = useState<Tensor | null>(null); // Image embedding tensor
     // The ONNX model expects the input to be rescaled to 1024. 
@@ -96,7 +97,7 @@ export function ImageEditor() {
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
 
   const imageClasses = "";
-  const maskImageClasses = `top-0 left-0 absolute opacity-40 pointer-events-none z-10 border border-red-500`;
+  const maskImageClasses = `top-0 left-0 absolute opacity-40 pointer-events-none z-10`;
 
   if (!imageState.image) {
     return null;
@@ -141,6 +142,15 @@ export function ImageEditor() {
       resizeObserver.unobserve(bodyEl);
     };
   }, [imageState.image]);
+
+  useEffect(() => {
+    if (maskImg) {
+      toast.success("Segment selected");
+    } else {
+      toast.error("Segment cleared");
+    }
+  }, [maskImg])
+
 
   useEffect(() => {
     // Initialize the ONNX model
@@ -198,7 +208,7 @@ export function ImageEditor() {
     // Run the ONNX model every time clicks has changed
     useEffect(() => {
       runONNX();
-    }, [clicks, model, setModel, tensor, modelScale]);
+    }, [clicks]);
   
     const runONNX = async () => {
       try {
@@ -240,7 +250,7 @@ export function ImageEditor() {
     return { x, y, clickType };
   };
 
-  const handleMouseMove = _.throttle((e: any) => {
+  const handleClickOnImage = _.throttle((e: any) => {
     let el = e.nativeEvent.target;
     const rect = el.getBoundingClientRect();
     let x = e.clientX - rect.left;
@@ -281,7 +291,8 @@ export function ImageEditor() {
   };
 
   const handleModifyTheImage = async () => {
-    await modifyTheImage(imageState.image, maskImg, userPrompt);
+    await modifyTheImage(imageState.image, maskImg, falApiKey, userPrompt);
+    setFalDialogOpen(false);
   }
 
   const getFilterStyle = () => {
@@ -338,9 +349,9 @@ export function ImageEditor() {
             <>
               {imageState.image && (
                 <img
-                  onMouseMove={handleMouseMove}
-                  onMouseOut={() => _.defer(() => setMaskImg(null))}
-                  onTouchStart={handleMouseMove}
+                  onClick={handleClickOnImage}
+                  // onMouseOut={() => _.defer(() => setMaskImg(null))}
+                  onTouchStart={handleClickOnImage}
                   src={imageState.image}
                   className={`${
                     shouldFitToWidth ? "w-full" : "h-full"
@@ -385,10 +396,10 @@ export function ImageEditor() {
             <TabsContent value="advance" className="mt-0">
               <div className="space-y-4 flex flex-col">
                 <p>
-                  Hover over the image and click on the part you want to change.
+                  Segmentation activated. Please click on the part of the image you want to change.
                 </p>
                 <Input placeholder="Enter a prompt" onChange={handleUserPrompt}></Input>
-                <Button onClick={handleModifyTheImage}>Generate</Button>
+                <Button onClick={() => setFalDialogOpen(true)}>Generate</Button>
               </div>
             </TabsContent>
             <TabsContent value="transform" className="mt-0">
@@ -621,6 +632,52 @@ export function ImageEditor() {
         </Tabs>
       </Card>
 
+      <Dialog
+        open={isFalDialogOpen}
+        onOpenChange={setFalDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modify the image</DialogTitle>
+            <DialogDescription>
+              Enter your Fal-ai API key to process this image. You can get a
+              free API key at{" "}
+              <a
+                href="https://fal.ai/models/fal-ai/Fal-lora-fill"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                Fal.ai
+              </a>
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="fal-api-key" className="text-sm font-medium">
+                API Key
+              </label>
+              <Input
+                id="fal-api-key"
+                type="password"
+                value={falApiKey}
+                onChange={(e) => setFalApiKey(e.target.value)}
+                placeholder="Enter your fal.ai API key"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setFalDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleModifyTheImage}>Ok</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={isRemoveBgDialogOpen}
         onOpenChange={setIsRemoveBgDialogOpen}

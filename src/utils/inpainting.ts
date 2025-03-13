@@ -1,12 +1,6 @@
 import { fal } from "@fal-ai/client";
 import { toast } from "sonner";
 
-// const apiKey = "";
-
-fal.config({
-  credentials:
-    "a8d2cd43-5f51-4a16-b662-c94800f0571d:9e53cd7062185ae69b941849596efef0",
-});
 
 // Function to resize an image
 const resizeImage = (
@@ -55,8 +49,14 @@ const resizeImage = (
 export const fillImageWithMask = async (
   imageUrl: string | File | Blob | HTMLImageElement,
   maskUrl: string | File | Blob | HTMLImageElement,
-  prompt: string,
+  apiKey: string,
+  prompt: string
 ): Promise<string | null> => {
+  
+  fal.config({
+    credentials: apiKey,
+  });
+
   try {
     // Check if we need to handle local files
     let processedImageUrl = imageUrl;
@@ -104,11 +104,6 @@ export const fillImageWithMask = async (
         }
       },
     });
-
-    // if (!response.ok) {
-    //   const errorData = await response.json();
-    //   throw new Error(errorData.errors?.[0]?.message || "Failed to process image");
-    // }
 
     const result = response.data;
 
