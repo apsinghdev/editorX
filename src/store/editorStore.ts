@@ -74,7 +74,6 @@ interface EditorStore {
   downloadImage: () => void;
 }
 
-
 const initialImageState: ImageState = {
   image: null,
   originalImage: null,
@@ -287,12 +286,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     prompt: string
   ) => {
     toast.loading("Magic is happening...");
-    const modifiedImage = await fillImageWithMask(
-      image,
-      mask,
-      apiKey,
-      prompt
-    );
+    const modifiedImage = await fillImageWithMask(image, mask, apiKey, prompt);
     if (modifiedImage) {
       const img = new Image();
       img.onload = () => {

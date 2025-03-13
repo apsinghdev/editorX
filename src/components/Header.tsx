@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -9,13 +8,15 @@ export function Header() {
         <div className="flex items-center space-x-2">
           <span className="h-6 w-6 rounded-full bg-primary animate-pulse-soft"></span>
           <h1 className="text-xl font-medium tracking-tight">EditorX</h1>
-          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Beta</span>
+          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+            Beta
+          </span>
         </div>
         <div className="flex items-center space-x-4">
           <ThemeToggle />
-          <a 
+          <a
             href="https://github.com/apsinghdev/editorX"
-            target="_blank" 
+            target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >

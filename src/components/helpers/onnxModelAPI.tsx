@@ -1,9 +1,3 @@
-// Copyright (c) Meta Platforms, Inc. and affiliates.
-// All rights reserved.
-
-// This source code is licensed under the license found in the
-// LICENSE file in the root directory of this source tree.
-
 import { Tensor } from "onnxruntime-web";
 import { modeDataProps } from "./Interfaces";
 
@@ -18,7 +12,7 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
   if (clicks) {
     let n = clicks.length;
 
-    // If there is no box input, a single padding point with 
+    // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
     pointCoords = new Float32Array(2 * (n + 1));
