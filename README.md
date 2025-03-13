@@ -1,5 +1,9 @@
 # Welcome to editorX
 
+## Demo
+
+![EditorX Demo](./edxg.gif)
+
 ### Setting up the project locally
 
 1. Clone the repo
